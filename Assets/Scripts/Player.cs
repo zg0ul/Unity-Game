@@ -6,25 +6,12 @@ public class Player : MonoBehaviour
 {
     // SerializeField and private accessor makes the variable visible in the inspector, but not in other scripts
     [SerializeField] private float moveSpeed = 7f; // The speed at which the player moves
+    [SerializeField] private GameInput gameInput; // The GameInput script that we created earlier
 
     private bool isWalking;
 
     private void Update() {
-        Vector2 inputVector = new Vector2(0, 0);
-        if (Input.GetKey(KeyCode.W)) {
-            inputVector.y += 1;
-        }
-        if (Input.GetKey(KeyCode.A)) {
-            inputVector.x -= 1;
-        }
-        if (Input.GetKey(KeyCode.S)) {
-            inputVector.y -= 1;
-        }
-        if (Input.GetKey(KeyCode.D)) {
-            inputVector.x += 1;
-        } 
-
-        inputVector = inputVector.normalized; // Normalize the vector so that the player doesn't move faster diagonally
+        Vector2 inputVector = gameInput.GetMovementVectorNormalized(); // Gets the input vector from the GameInput script
         
         // make sure that the player moves on the x axis and z axis (instead of y axis)
         Vector3 moveDir = new Vector3(inputVector.x, 0f, inputVector.y);
