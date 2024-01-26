@@ -14,7 +14,6 @@ public class GameInput : MonoBehaviour
 
         inputVector = inputVector.normalized; // Normalize the vector so that the player doesn't move faster diagonally
         
-        Debug.Log(inputVector);
         return inputVector;
     }
 }
