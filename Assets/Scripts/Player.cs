@@ -1,17 +1,43 @@
+using System;
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
 public class Player : MonoBehaviour
 {
+
+    public static Player Instance { get; private set; }
+
+    public event EventHandler<OnSelectedCounterChangedEventArgs> OnSelectedCounterChanged;
+    public class OnSelectedCounterChangedEventArgs : EventArgs {
+        public ClearCounter selectedCounter; 
+    }
+
     // SerializeField and private accessor makes the variable visible in the inspector, but not in other scripts
     [SerializeField] private float moveSpeed = 7f; // The speed at which the player moves
     [SerializeField] private GameInput gameInput; // The GameInput script that we created earlier
     [SerializeField] private LayerMask countersLayerMask;
     
     private bool isWalking;
-
     private Vector3 lastInteractDir;
+    private ClearCounter selectedCounter;
+
+    private void Awake() {
+        if (Instance != null) {
+            Debug.LogError("There is more than one Player instance");
+        }
+        Instance = this;
+    }
+
+    private void Start() {
+        gameInput.OnInteractAction += GameInput_OnInteractAction;
+    }
+
+    private void GameInput_OnInteractAction(object sender, System.EventArgs e) {
+        if (selectedCounter != null) {
+            selectedCounter.Interact();
+        }
+    }
 
     private void Update() {
         HandleMovement();
@@ -35,9 +61,20 @@ public class Player : MonoBehaviour
         if (Physics.Raycast(transform.position, lastInteractDir, out RaycastHit raycastHit, interactDistance, countersLayerMask)) {
             if(raycastHit.transform.TryGetComponent(out ClearCounter clearCounter)) {
                 // Has ClearCounter
-                clearCounter.Interact();
+                if (clearCounter != selectedCounter) {
+                    // to keep track of the selected counter
+                    SetSelectedCounter(clearCounter);
+                }
+            } else {
+                // if the player interacts with an object that isn't a counter or doesn't have the clearCounter script then reset selectedCounter to null
+                SetSelectedCounter(null);
             }
+        } else {
+            // if the player isn't interacting with a clearCounter then we reset selectedCounter to being null
+            SetSelectedCounter(null);
         }
+
+        Debug.Log(selectedCounter);
     }
 
     private void HandleMovement() {
@@ -93,5 +130,13 @@ public class Player : MonoBehaviour
         isWalking = moveDir != Vector3.zero;
         float rotateSpeed = 10f; // the speed at which the player rotates
         transform.forward = Vector3.Slerp(transform.forward, moveDir, Time.deltaTime * rotateSpeed); // rotates the player to face the direction it's moving in
+    }
+
+    private void SetSelectedCounter(ClearCounter selectedCounter) {
+        this.selectedCounter = selectedCounter;
+        OnSelectedCounterChanged?.Invoke(this, new OnSelectedCounterChangedEventArgs
+                    {
+                        selectedCounter = this.selectedCounter
+                    });
     }
 }

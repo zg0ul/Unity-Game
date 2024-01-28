@@ -1,14 +1,27 @@
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using System;
 
 public class GameInput : MonoBehaviour
 {
+
+    public event EventHandler OnInteractAction;
+
     private PlayerInputActions playerInputActions;
+    
     private void Awake() {
         playerInputActions = new PlayerInputActions();
         playerInputActions.Player.Enable();
+
+        playerInputActions.Player.Interact.performed += Interact_Performed;
     }
+
+    private void Interact_Performed(UnityEngine.InputSystem.InputAction.CallbackContext obj) {
+        // The ?.Invoke is used to check if the function has listeners, if it does then it sends the parameters, if it is null then the execution will stop before the ?
+        OnInteractAction?.Invoke(this, EventArgs.Empty);
+    }
+
     public Vector2 GetMovementVectorNormalized() {
         Vector2 inputVector = playerInputActions.Player.Move.ReadValue<Vector2>();
 
