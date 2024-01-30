@@ -73,8 +73,6 @@ public class Player : MonoBehaviour
             // if the player isn't interacting with a clearCounter then we reset selectedCounter to being null
             SetSelectedCounter(null);
         }
-
-        Debug.Log(selectedCounter);
     }
 
     private void HandleMovement() {
