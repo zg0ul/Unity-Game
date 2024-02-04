@@ -11,7 +11,7 @@ public class Player : MonoBehaviour, IKitchenObjectParent
     public event EventHandler<OnSelectedCounterChangedEventArgs> OnSelectedCounterChanged;
     public class OnSelectedCounterChangedEventArgs : EventArgs
     {
-        public ClearCounter selectedCounter;
+        public BaseCounter selectedCounter;
     }
 
     // SerializeField and private accessor makes the variable visible in the inspector, but not in other scripts
@@ -22,7 +22,7 @@ public class Player : MonoBehaviour, IKitchenObjectParent
 
     private bool isWalking;
     private Vector3 lastInteractDir;
-    private ClearCounter selectedCounter;
+    private BaseCounter selectedCounter;
 
     private KitchenObject kitchenObject;
     private void Awake()
@@ -72,24 +72,24 @@ public class Player : MonoBehaviour, IKitchenObjectParent
         // in the Raycast function, the direction vector (moveDir) would be zero if we stop moving, which would shoot a Raycast nowhere, therefore if we stop moving we won't be able to detect the object anymore, a fix for that is to save the last direction before we stop moving and use that to detect an object.
         if (Physics.Raycast(transform.position, lastInteractDir, out RaycastHit raycastHit, interactDistance, countersLayerMask))
         {
-            if (raycastHit.transform.TryGetComponent(out ClearCounter clearCounter))
+            if (raycastHit.transform.TryGetComponent(out BaseCounter baseCounter))
             {
-                // Has ClearCounter
-                if (clearCounter != selectedCounter)
+                // Has Counter
+                if (baseCounter != selectedCounter)
                 {
                     // to keep track of the selected counter
-                    SetSelectedCounter(clearCounter);
+                    SetSelectedCounter(baseCounter);
                 }
             }
             else
             {
-                // if the player interacts with an object that isn't a counter or doesn't have the clearCounter script then reset selectedCounter to null
+                // if the player interacts with an object that isn't a counter or doesn't have the Counter script then reset selectedCounter to null
                 SetSelectedCounter(null);
             }
         }
         else
         {
-            // if the player isn't interacting with a clearCounter then we reset selectedCounter to being null
+            // if the player isn't interacting with a Counter then we reset selectedCounter to being null
             SetSelectedCounter(null);
         }
     }
@@ -150,7 +150,7 @@ public class Player : MonoBehaviour, IKitchenObjectParent
         transform.forward = Vector3.Slerp(transform.forward, moveDir, Time.deltaTime * rotateSpeed); // rotates the player to face the direction it's moving in
     }
 
-    private void SetSelectedCounter(ClearCounter selectedCounter)
+    private void SetSelectedCounter(BaseCounter selectedCounter)
     {
         this.selectedCounter = selectedCounter;
         OnSelectedCounterChanged?.Invoke(this, new OnSelectedCounterChangedEventArgs
